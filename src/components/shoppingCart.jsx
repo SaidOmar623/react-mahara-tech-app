@@ -9,17 +9,18 @@ class ShoppingCart extends Component {
 
     handleDelete = (product)=>{
         // clone  edit  set-State
-        const newproducts = this.state.shopcart.map((p)=>{
-            if(p.id === product.id){
-                // product.IsInCart = !product.IsInCart;
-                // this.state.shopcart.
+        // const newproducts = this.state.shopcart.map((p)=>{
+        //     if(p.id === product.id){
+        //         // product.IsInCart = !product.IsInCart;
+        //         // this.state.shopcart.
 
-                console.log("delete");
-                console.log(product);
+        //         console.log("delete");
+        //         console.log(product);
                 
-            }
-        });
-        this.setState({shopcart: newproducts});
+        //     }
+        // });
+        const shopcart = this.state.shopcart.filter((p)=>( p.id !== product.id ))
+        this.setState({shopcart});
     }
     // handleReset = () =>{
     // /**Clone */   let products = [...this.state.products];
@@ -54,7 +55,7 @@ class ShoppingCart extends Component {
                         // }
                         return(
                             // <Product key={product.id} product={product} />
-                            <Product key={product.id} product={product} onDelete={this.handleDelete} onIncrement={this.handleIncrement}>
+                            <Product key={product.id} product={product} /*onDelete={this.handleDelete} onIncrement={this.handleIncrement}*/>
                             {/* <h3>{product.id}</h3> */}
                             </Product>
                         )

@@ -38,7 +38,7 @@ class Login extends Component {
             this.setState({errors:{}})
             return null;
         } 
-        
+
         //Get error message 
         for(const error of result.error.details){
             errors[error.path] = error.message;

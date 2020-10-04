@@ -1,5 +1,6 @@
 import React, {Component} from 'react';
 import {Route, Switch, Redirect} from 'react-router-dom';
+import axios from 'axios'
 
 import NavBar from './navbar';
 import ShoppingCart from './shoppingCart';
@@ -9,41 +10,61 @@ import Contact from './contact';
 import ProductDetails from './product-details';
 import PageNotFound from './page-not-found';
 import Login from './login';
+import Admin from './admin';
+import ProForm from './pro-form';
 
 class App extends Component {
     state = { 
         products: [
-            {id: 1, name: 'Burger', count: 3,price: 25, IsInCart: false},
-            {id: 2, name: 'Cola', count: 5,price: 12, IsInCart: false},
-            {id: 3, name: 'Fries', count: 9,price: 55, IsInCart: false}
+            // {id: 1, name: 'Burger', count: 3,price: 25, IsInCart: false},
+            // {id: 2, name: 'Cola', count: 5,price: 12, IsInCart: false},
+            // {id: 3, name: 'Fries', count: 9,price: 55, IsInCart: false}
         ]
     }
+
+    async componentDidMount(){
+        // Call Backend using Axios 
+        const {data} = await axios.get('http://localhost:3000/products');
+        console.log(data);
+        // setState
+        this.setState({products: data})
+
+        // //using Fetch
+        // const promise = fetch('https://jsonplaceholder.typicode.com/posts');
+        // // console.log(promise);
+        // const result = promise.then(res => res.json());
+        // // console.log(result);
+        // result.then(data => console.log(data))
+    }
     
-    handleDelete = (product)=>{
+    handleDelete = async (product)=>{
+
+        await axios.delete('http://localhost:3000/products/'+product.id)
+
         // clone  edit  set-State
-        const newproducts = this.state.products.filter((p)=>
+        const products = this.state.products.filter((p)=>
             p.id !== product.id
         );
-        this.setState({products: newproducts});
+        this.setState({products});
     }
-    handleReset = () =>{
-    /**Clone */   let products = [...this.state.products];
-    /**edit */    products = products.map((p)=>{
-        p.count = 0;
-        return p;
-    });
-    /**setState */this.setState({products}); 
-    }
-    handleIncrement = (product) =>{
-        //Clone
-        const products = [...this.state.products];
-        const index = products.indexOf(product);
-        products[index] = {...products[index]};
-        //Edit
-        products[index].count++;
-        //setState
-        this.setState({products})
-    }
+    // handleReset = () =>{
+    // /**Clone */   let products = [...this.state.products];
+    // /**edit */    products = products.map((p)=>{
+    //     p.count = 0;
+    //     return p;
+    // });
+    // /**setState */this.setState({products}); 
+    // }
+    // handleIncrement = (product) =>{
+    //     //Clone
+    //     const products = [...this.state.products];
+    //     const index = products.indexOf(product);
+    //     products[index] = {...products[index]};
+    //     //Edit
+    //     products[index].count++;
+    //     //setState
+    //     this.setState({products})
+    // }
     handleInCartChange = (product) =>{
         //Clone
         const products = [...this.state.products];
@@ -61,6 +82,14 @@ class App extends Component {
             <NavBar productsCount={this.state.products.length}/>
             <div className="container">
             <Switch>
+                <Route path="/admin" render={(props)=>(
+                    <Admin 
+                        products={this.state.products}
+                        onDelete={this.handleDelete}
+                        {...props}
+                    />
+                )}/>
+                <Route path="/proform/:id?" component={ProForm}/>
                 <Route path="/login" component={Login}/>
                 <Route path="/notfound" component={PageNotFound}/>
                 <Route path="/product/:id" render = {(props)=> (
@@ -73,9 +102,6 @@ class App extends Component {
                     <ShoppingCart 
                         products={this.state.products} 
                         productsCount={this.state.products.length}
-                        onIncrement={this.handleIncrement}
-                        onDelete={this.handleDelete}
-                        onReset={this.handleReset}
                         {...props}
                     />
                 )}/>
