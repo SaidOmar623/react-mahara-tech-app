@@ -1,7 +1,8 @@
-import React, {Component} from 'react';
-import {Route, Switch, Redirect} from 'react-router-dom';
-import axios from 'axios'
+import React, { Component } from 'react';
+import { Route, Switch, Redirect } from 'react-router-dom';
+import axios from 'axios';
 
+import { provider } from 'react-redux';
 import NavBar from './navbar';
 import ShoppingCart from './shoppingCart';
 import Home from './home';
@@ -12,6 +13,10 @@ import PageNotFound from './page-not-found';
 import Login from './login';
 import Admin from './admin';
 import ProForm from './pro-form';
+import Posts from './posts'
+import { ToastContainer, toast } from 'react-toastify';
+import PostForm from './postForm';
+
 
 class App extends Component {
     state = { 
@@ -25,7 +30,7 @@ class App extends Component {
     async componentDidMount(){
         // Call Backend using Axios 
         const {data} = await axios.get('http://localhost:3000/products');
-        console.log(data);
+        // console.log(data);
         // setState
         this.setState({products: data})
 
@@ -38,14 +43,26 @@ class App extends Component {
     }
     
     handleDelete = async (product)=>{
+        // Old Data
+        const oldProducts = [...this.state.products];
 
-        await axios.delete('http://localhost:3000/products/'+product.id)
+        // await axios.delete('http://localhost:3000/products/'+product.id)
 
         // clone  edit  set-State
         const products = this.state.products.filter((p)=>
             p.id !== product.id
         );
         this.setState({products});
+
+        try{
+            //call Backend
+            await axios.delete('http://localhost:3000/products/'+product.id)
+        }catch(ex){
+            toast("Can't Delete Product");
+            this.setState({ products : oldProducts })
+        }
+        
+
     }
     // handleReset = () =>{
     // /**Clone */   let products = [...this.state.products];
@@ -79,51 +96,58 @@ class App extends Component {
     render() { 
         return ( 
         <React.Fragment>
-            <NavBar productsCount={this.state.products.length}/>
-            <div className="container">
-            <Switch>
-                <Route path="/admin" render={(props)=>(
-                    <Admin 
-                        products={this.state.products}
-                        onDelete={this.handleDelete}
-                        {...props}
-                    />
-                )}/>
-                <Route path="/proform/:id?" component={ProForm}/>
-                <Route path="/login" component={Login}/>
-                <Route path="/notfound" component={PageNotFound}/>
-                <Route path="/product/:id" render = {(props)=> (
-                <ProductDetails 
-                    products={this.state.products}
-                    {...props}
-                />
-                )} />
-                <Route path="/cart" render={(props)=>(
-                    <ShoppingCart 
+            <provider store={store}>
+                <ToastContainer />
+                <NavBar productsCount={this.state.products.length}/>
+                <div className="container">
+                    <Switch>
+                        <Route path="/admin" render={(props)=>(
+                            <Admin 
+                                products={this.state.products}
+                                onDelete={this.handleDelete}
+                                {...props}
+                            />
+                        )}/>
+                        <Route path="/proform/:id?" component={ProForm}/>
+                        <Route path="/login" component={Login}/>
+                        <Route path="/notfound" component={PageNotFound}/>
+                        <Route path="/product/:id" render = {(props)=> (
+                        <ProductDetails 
+                            products={this.state.products}
+                            {...props}
+                        />
+                        )} />
+                        <Route path="/cart" render={(props)=>(
+                            <ShoppingCart 
+                                products={this.state.products} 
+                                productsCount={this.state.products.length}
+                                {...props}
+                            />
+                        )}/>
+                        <Route path="/about" component={About} />
+                        <Route path="/contact" component={Contact} />
+                        <Route path="/home" render = {()=> (
+                            <Home 
+                                products={this.state.products}
+                                onCartChange={this.handleInCartChange}
+                            />
+                        )} />
+                        <Redirect from="/" to="/home" />
+                        <Redirect to='/notfound' />
+                    </Switch>
+                    
+                    {/* <ShoppingCart 
                         products={this.state.products} 
-                        productsCount={this.state.products.length}
-                        {...props}
-                    />
-                )}/>
-                <Route path="/about" component={About} />
-                <Route path="/contact" component={Contact} />
-                <Route path="/home" render = {()=> (
-                    <Home 
-                        products={this.state.products}
-                        onCartChange={this.handleInCartChange}
-                    />
-                )} />
-                <Redirect from="/" to="/home" />
-                <Redirect to='/notfound' />
-            </Switch>
-            
-            {/* <ShoppingCart 
-                products={this.state.products} 
-                onIncrement={this.handleIncrement}
-                onDelete={this.handleDelete}
-                onReset={this.handleReset}
-            /> */}
-            </div>
+                        onIncrement={this.handleIncrement}
+                        onDelete={this.handleDelete}
+                        onReset={this.handleReset}
+                    /> */}
+                    <hr/>
+                    <PostForm />
+                    <hr/>
+                    <Posts />
+                </div>
+            </provider>
         </React.Fragment>
         );
     }
